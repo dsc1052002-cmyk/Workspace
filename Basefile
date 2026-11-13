@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis Private Workspace | Executive Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#09090b',
+            surface: '#111114',
+            elevated: '#18181c',
+            borderline: '#27272a',
+            accent: '#10b981',
+            accentHover: '#059669'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #09090b;
+      color: #f4f4f5;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <!-- GLOBAL TOAST NOTIFICATION -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 1: PUBLIC AUTHENTICATION GATE (/login)                           -->
+  <!-- ===================================================================== -->
+  <div id="view-login" class="min-h-screen flex flex-col justify-center items-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-obsidian to-obsidian">
+    <div class="w-full max-w-md">
+      <!-- Brand Header -->
+      <div class="flex items-center justify-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-950/50">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-white">AEGIS<span class="text-emerald-400">.OS</span></h1>
+          <p class="text-xs text-zinc-400 tracking-wider uppercase">Private Executive Workspace</p>
+        </div>
+      </div>
+
+      <!-- Login Card -->
+      <div class="bg-surface border border-borderline rounded-2xl p-8 shadow-2xl">
+        <div class="mb-6">
+          <h2 class="text-lg font-medium text-white">Authenticate Session</h2>
+          <p class="text-sm text-zinc-400 mt-1">Restricted access. Authorized personnel only.</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
+            <input id="login-email" type="email" required placeholder="name@workspace.io"
+              class="w-full px-3.5 py-2.5 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Passphrase</label>
+            <input id="login-password" type="password" required placeholder="••••••••"
+              class="w-full px-3.5 py-2.5 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition" />
+          </div>
+
+          <div id="login-error" class="hidden text-xs text-red-400 bg-red-950/40 border border-red-900/60 rounded-lg p-3"></div>
+
+          <button type="submit"
+            class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm rounded-lg transition shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            <span>Enter Workspace</span>
+          </button>
+        </form>
+
+        <!-- Invite Gate Link -->
+        <div class="mt-6 pt-5 border-t border-borderline flex items-center justify-between text-xs">
+          <span class="text-zinc-500">Have an invite token?</span>
+          <button onclick="navigateTo('register')" class="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 transition">
+            <span>Redeem Invite</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Demo Credentials Bar -->
+      <div class="mt-6 bg-surface/60 border border-borderline/70 rounded-xl p-4">
+        <p class="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold mb-2.5 flex items-center gap-1.5">
+          <i data-lucide="terminal" class="w-3.5 h-3.5 text-emerald-400"></i>
+          Instant Demo Access (Click to Autofill & Sign In)
+        </p>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="quickLogin('admin@workspace.io', 'admin123')"
+            class="text-left p-2.5 rounded-lg bg-obsidian hover:bg-elevated border border-borderline transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-medium text-white group-hover:text-emerald-400 transition">Master Admin</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ADMIN</span>
+            </div>
+            <p class="text-[11px] text-zinc-500 mt-1 truncate">Full + Background</p>
+          </button>
+
+          <button onclick="quickLogin('member@workspace.io', 'member123')"
+            class="text-left p-2.5 rounded-lg bg-obsidian hover:bg-elevated border border-borderline transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-medium text-white group-hover:text-sky-400 transition">Team Member</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">MEMBER</span>
+            </div>
+            <p class="text-[11px] text-zinc-500 mt-1 truncate">Workspace Only</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 2: TOKEN-GATED INVITE REGISTRATION (/register)                   -->
+  <!-- ===================================================================== -->
+  <div id="view-register" class="hidden min-h-screen flex flex-col justify-center items-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-obsidian to-obsidian">
+    <div class="w-full max-w-md">
+      <div class="mb-4">
+        <button onclick="navigateTo('login')" class="text-xs text-zinc-400 hover:text-white flex items-center gap-1.5 transition">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Back to Login Gate</span>
+        </button>
+      </div>
+
+      <div class="bg-surface border border-borderline rounded-2xl p-8 shadow-2xl">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <i data-lucide="key-round" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-medium text-white">Invite-Only Onboarding</h2>
+            <p class="text-xs text-zinc-400">Public sign-ups are disabled. Verify your token.</p>
+          </div>
+        </div>
+
+        <!-- Step A: Token Verification Box -->
+        <div class="mb-5">
+          <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Cryptographic Invite Token</label>
+          <div class="flex gap-2">
+            <input id="reg-token-input" type="text" placeholder="e.g. AEGIS-VIP-9482"
+              class="flex-1 px-3.5 py-2 bg-obsidian border border-borderline rounded-lg text-sm font-mono text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 uppercase" />
+            <button type="button" onclick="verifyInviteToken()"
+              class="px-4 py-2 bg-elevated hover:bg-zinc-700 border border-borderline text-xs font-medium text-white rounded-lg transition">
+              Verify
+            </button>
+          </div>
+          <p class="text-[11px] text-zinc-500 mt-1.5">Sample active token: <button type="button" onclick="document.getElementById('reg-token-input').value='AEGIS-VIP-9482'; verifyInviteToken();" class="font-mono text-emerald-400 hover:underline">AEGIS-VIP-9482</button></p>
+        </div>
+
+        <!-- Token Invalid / Lock Message -->
+        <div id="reg-lock-banner" class="p-4 rounded-xl bg-obsidian border border-borderline text-center">
+          <i data-lucide="lock" class="w-5 h-5 text-zinc-500 mx-auto mb-1.5"></i>
+          <p class="text-xs font-medium text-zinc-300">Invite Verification Required</p>
+          <p class="text-[11px] text-zinc-500 mt-0.5">Enter a valid single-use token generated by an administrator to unlock account provisioning.</p>
+        </div>
+
+        <!-- Step B: Unlocked Registration Form -->
+        <form id="register-form" class="hidden space-y-4 pt-4 border-t border-borderline">
+          <div class="p-3 rounded-lg bg-emerald-950/30 border border-emerald-800/40 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] text-emerald-400 uppercase font-semibold">Verified Invitation</p>
+              <p id="reg-assigned-email" class="text-xs text-white font-mono mt-0.5"></p>
+            </div>
+            <span id="reg-assigned-role" class="text-[10px] px-2 py-0.5 rounded font-semibold uppercase"></span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Full Name</label>
+            <input id="reg-fullname" type="text" required placeholder="e.g. Dr. Eleanor Vance"
+              class="w-full px-3.5 py-2.5 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Create Passphrase</label>
+            <input id="reg-password" type="password" required minlength="6" placeholder="Minimum 6 characters"
+              class="w-full px-3.5 py-2.5 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+          </div>
+
+          <button type="submit"
+            class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm rounded-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="user-check" class="w-4 h-4"></i>
+            <span>Complete Provisioning & Enter</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 3 & 4: AUTHENTICATED SHELL (WORKSPACE + BACKGROUND ADMIN)        -->
+  <!-- ===================================================================== -->
+  <div id="app-shell" class="hidden min-h-screen flex flex-col">
+    <!-- Top Executive Navigation Bar -->
+    <header class="h-14 border-b border-borderline bg-surface/90 backdrop-blur-md sticky top-0 z-30 px-4 lg:px-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <span class="font-semibold text-sm tracking-tight text-white">AEGIS<span class="text-emerald-400">.OS</span></span>
+        </div>
+
+        <span class="text-zinc-700">|</span>
+
+        <!-- Mode Switcher (Workspace vs Background Admin) -->
+        <nav class="flex items-center gap-1.5">
+          <button id="nav-workspace-btn" onclick="switchShellView('workspace')"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+            <span>Workspace</span>
+          </button>
+
+          <!-- Background Admin Tab (Only visible to Admin role) -->
+          <button id="nav-admin-btn" onclick="switchShellView('admin')"
+            class="hidden px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <i data-lucide="server-cog" class="w-3.5 h-3.5"></i>
+            <span>Background Admin</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Right User Status & Logout -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2.5 px-3 py-1 rounded-full bg-obsidian border border-borderline">
+          <span id="header-user-name" class="text-xs text-zinc-300 font-medium"></span>
+          <span id="header-user-role" class="text-[10px] px-1.5 py-0.2 rounded font-semibold uppercase"></span>
+        </div>
+
+        <button onclick="logout()" title="Sign Out"
+          class="px-3 py-1.5 rounded-lg bg-obsidian hover:bg-red-950/40 border border-borderline hover:border-red-900/50 text-xs text-zinc-400 hover:text-red-400 transition flex items-center gap-1.5">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Lock Session</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- SUB-VIEW A: WORKSPACE ACCESS (/workspace)                           -->
+    <!-- =================================================================== -->
+    <main id="shell-workspace" class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+      <!-- Workspace Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-borderline">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">● Encrypted Workspace</span>
+          </div>
+          <h1 id="ws-welcome-title" class="text-2xl font-semibold text-white mt-1">Executive Operations Hub</h1>
+          <p class="text-sm text-zinc-400">Shared operational tasks, strategic intelligence notes, and active files.</p>
+        </div>
+
+        <!-- Workspace Sub-Tabs -->
+        <div class="flex items-center bg-surface border border-borderline rounded-lg p-1 self-start">
+          <button onclick="switchWsTab('overview')" id="ws-tab-overview" class="px-3 py-1.5 rounded-md text-xs font-medium bg-elevated text-white transition">Overview</button>
+          <button onclick="switchWsTab('tasks')" id="ws-tab-tasks" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white transition">Tasks & Ops</button>
+          <button onclick="switchWsTab('vault')" id="ws-tab-vault" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white transition">Shared Vault</button>
+        </div>
+      </div>
+
+      <!-- TAB 1: OVERVIEW -->
+      <div id="ws-panel-overview" class="space-y-6">
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-surface border border-borderline rounded-xl p-5">
+            <div class="flex items-center justify-between text-zinc-400 text-xs">
+              <span>Active Operational Directives</span>
+              <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <p id="kpi-tasks-count" class="text-2xl font-semibold text-white mt-2">0</p>
+            <p class="text-xs text-zinc-500 mt-1">Synced across workspace members</p>
+          </div>
+
+          <div class="bg-surface border border-borderline rounded-xl p-5">
+            <div class="flex items-center justify-between text-zinc-400 text-xs">
+              <span>Vault Intelligence Notes</span>
+              <i data-lucide="file-lock-2" class="w-4 h-4 text-sky-400"></i>
+            </div>
+            <p id="kpi-notes-count" class="text-2xl font-semibold text-white mt-2">0</p>
+            <p class="text-xs text-zinc-500 mt-1">Restricted clearance documents</p>
+          </div>
+
+          <div class="bg-surface border border-borderline rounded-xl p-5">
+            <div class="flex items-center justify-between text-zinc-400 text-xs">
+              <span>Authorized Personnel</span>
+              <i data-lucide="users" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <p id="kpi-users-count" class="text-2xl font-semibold text-white mt-2">0</p>
+            <p class="text-xs text-zinc-500 mt-1">Active verified accounts</p>
+          </div>
+        </div>
+
+        <!-- Split Feed: Priority Directives & Recent Vault Entries -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-surface border border-borderline rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-white">Priority Directives</h3>
+              <button onclick="switchWsTab('tasks')" class="text-xs text-emerald-400 hover:underline">Manage All →</button>
+            </div>
+            <div id="overview-tasks-list" class="space-y-2.5"></div>
+          </div>
+
+          <div class="bg-surface border border-borderline rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-white">Recent Vault Briefings</h3>
+              <button onclick="switchWsTab('vault')" class="text-xs text-emerald-400 hover:underline">Open Vault →</button>
+            </div>
+            <div id="overview-notes-list" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TASKS & OPERATIONS -->
+      <div id="ws-panel-tasks" class="hidden space-y-4">
+        <div class="bg-surface border border-borderline rounded-xl p-5">
+          <h3 class="text-sm font-medium text-white mb-3">Add Operational Directive</h3>
+          <form id="add-task-form" class="flex flex-col sm:flex-row gap-2.5">
+            <input id="new-task-title" type="text" required placeholder="Enter directive or action item..."
+              class="flex-1 px-3.5 py-2 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+            <select id="new-task-priority" class="px-3 py-2 bg-obsidian border border-borderline rounded-lg text-xs text-zinc-300 focus:outline-none focus:border-emerald-500">
+              <option value="High">High Priority</option>
+              <option value="Normal" selected>Normal</option>
+              <option value="Critical">Critical</option>
+            </select>
+            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition">
+              + Add Directive
+            </button>
+          </form>
+        </div>
+
+        <div class="bg-surface border border-borderline rounded-xl p-5">
+          <div id="full-tasks-list" class="divide-y divide-borderline"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SHARED VAULT / NOTES -->
+      <div id="ws-panel-vault" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-surface border border-borderline rounded-xl p-5 h-fit">
+          <h3 class="text-sm font-medium text-white mb-3">Create Vault Briefing</h3>
+          <form id="add-note-form" class="space-y-3">
+            <div>
+              <label class="block text-[11px] uppercase text-zinc-400 mb-1">Document Title</label>
+              <input id="new-note-title" type="text" required placeholder="e.g. Q4 Restructuring Memo"
+                class="w-full px-3 py-2 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+            </div>
+            <div>
+              <label class="block text-[11px] uppercase text-zinc-400 mb-1">Classification</label>
+              <select id="new-note-tag" class="w-full px-3 py-2 bg-obsidian border border-borderline rounded-lg text-xs text-zinc-300 focus:outline-none focus:border-emerald-500">
+                <option value="Internal Confidential">Internal Confidential</option>
+                <option value="Executive Only">Executive Only</option>
+                <option value="Operations SOP">Operations SOP</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] uppercase text-zinc-400 mb-1">Content</label>
+              <textarea id="new-note-body" rows="4" required placeholder="Write secure notes..."
+                class="w-full px-3 py-2 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500"></textarea>
+            </div>
+            <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition">
+              Save to Vault
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 space-y-3" id="full-notes-list"></div>
+      </div>
+    </main>
+
+    <!-- =================================================================== -->
+    <!-- SUB-VIEW B: BACKGROUND ADMIN CONTROL PANEL (/admin)                 -->
+    <!-- =================================================================== -->
+    <main id="shell-admin" class="hidden flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+      <!-- Unauthorized Fallback Banner (Safety Guard) -->
+      <div id="admin-403-guard" class="hidden bg-red-950/20 border border-red-900/50 rounded-2xl p-10 text-center my-12">
+        <i data-lucide="shield-alert" class="w-10 h-10 text-red-400 mx-auto mb-3"></i>
+        <h2 class="text-lg font-semibold text-white">403 — Clearance Insufficient</h2>
+        <p class="text-sm text-zinc-400 mt-1 max-w-md mx-auto">Background infrastructure controls are restricted strictly to Master Administrator accounts.</p>
+        <button onclick="switchShellView('workspace')" class="mt-4 px-4 py-2 bg-elevated hover:bg-zinc-700 text-xs text-white rounded-lg transition">
+          Return to Workspace
+        </button>
+      </div>
+
+      <!-- Actual Admin Content -->
+      <div id="admin-authorized-content" class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-borderline">
+          <div>
+            <span class="text-xs font-mono uppercase tracking-wider text-amber-400">● Root Infrastructure & Access Control</span>
+            <h1 class="text-2xl font-semibold text-white mt-1">Background Control Panel</h1>
+            <p class="text-sm text-zinc-400">Issue single-use registration invites, manage member clearance, and audit access logs.</p>
+          </div>
+          <button onclick="resetDemoSystem()" class="self-start px-3 py-1.5 rounded-lg bg-obsidian hover:bg-elevated border border-borderline text-xs text-zinc-400 hover:text-white transition flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset Demo Data</span>
+          </button>
+        </div>
+
+        <!-- TOP GRID: INVITE GENERATOR + ACTIVE TOKENS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Generate New Invite -->
+          <div class="lg:col-span-5 bg-surface border border-borderline rounded-xl p-6">
+            <div class="flex items-center gap-2.5 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-white">Generate Workspace Invite</h3>
+                <p class="text-xs text-zinc-400">Creates a locked, single-use registration token</p>
+              </div>
+            </div>
+
+            <form id="create-invite-form" class="space-y-4">
+              <div>
+                <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Recipient Email</label>
+                <input id="invite-email" type="email" required placeholder="colleague@domain.com"
+                  class="w-full px-3.5 py-2 bg-obsidian border border-borderline rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Assigned Clearance Role</label>
+                <select id="invite-role" class="w-full px-3.5 py-2 bg-obsidian border border-borderline rounded-lg text-sm text-white focus:outline-none focus:border-amber-500">
+                  <option value="member">Workspace Member (Standard Access)</option>
+                  <option value="admin">Administrator (Workspace + Background)</option>
+                </select>
+              </div>
+
+              <button type="submit"
+                class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs rounded-lg transition flex items-center justify-center gap-2">
+                <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                <span>Mint Single-Use Invite Token</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Issued Invitations Ledger -->
+          <div class="lg:col-span-7 bg-surface border border-borderline rounded-xl p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-white">Issued Invite Tokens</h3>
+                <p class="text-xs text-zinc-400">Share a token with your invitee so they can unlock the registration page</p>
+              </div>
+            </div>
+            <div id="admin-invites-list" class="space-y-2.5 overflow-y-auto max-h-72 pr-1"></div>
+          </div>
+        </div>
+
+        <!-- MIDDLE: USER ACCESS DIRECTORY -->
+        <div class="bg-surface border border-borderline rounded-xl p-6">
+          <div class="mb-4">
+            <h3 class="text-sm font-semibold text-white">Authorized Personnel Directory</h3>
+            <p class="text-xs text-zinc-400">Promote/demote user clearance or immediately revoke workspace access</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-borderline text-[11px] uppercase tracking-wider text-zinc-500">
+                  <th class="py-2.5 px-3">User</th>
+                  <th class="py-2.5 px-3">Role</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Clearance Controls</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-tbody" class="divide-y divide-borderline text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- BOTTOM: SECURITY AUDIT LOGS -->
+        <div class="bg-surface border border-borderline rounded-xl p-6">
+          <h3 class="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+            <span>Live Security & Access Audit Trail</span>
+          </h3>
+          <div id="admin-audit-logs" class="bg-obsidian border border-borderline rounded-lg p-3 font-mono text-xs space-y-1.5 max-h-52 overflow-y-auto"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC & STATE ENGINE                                      -->
+  <!-- ===================================================================== -->
+  <script>
+    const STORAGE_KEY = 'aegis_workspace_state_v1';
+
+    const DEFAULT_STATE = {
+      users: [
+        { id: 'u1', name: 'Managing Director', email: 'admin@workspace.io', password: 'admin123', role: 'admin', status: 'active' },
+        { id: 'u2', name: 'Operations Lead', email: 'member@workspace.io', password: 'member123', role: 'member', status: 'active' }
+      ],
+      invites: [
+        { token: 'AEGIS-VIP-9482', email: 'partner@workspace.io', role: 'member', used: false, createdAt: 'Today, 09:00' }
+      ],
+      tasks: [
+        { id: 't1', title: 'Review Q4 capital allocation & operational budget', priority: 'Critical', completed: false, author: 'Managing Director' },
+        { id: 't2', title: 'Audit vendor SLA agreements and renewal timelines', priority: 'High', completed: false, author: 'Operations Lead' },
+        { id: 't3', title: 'Onboard external advisory partner via single-use invite token', priority: 'Normal', completed: true, author: 'Managing Director' }
+      ],
+      notes: [
+        { id: 'n1', title: 'Workspace Security & Access Protocol', tag: 'Operations SOP', body: 'All external collaborators must be provisioned exclusively via single-use cryptographic invite tokens from the Background Admin panel. Revoked accounts lose session access immediately.', author: 'Managing Director', date: 'Nov 13, 2026' },
+        { id: 'n2', title: 'Executive Expansion Strategy Brief', tag: 'Executive Only', body: 'Target consolidation of regional operational workflows under unified digital SOPs prior to year-end review.', author: 'Managing Director', date: 'Nov 12, 2026' }
+      ],
+      logs: [
+        { time: '09:00:12', event: 'SYSTEM_INIT: Workspace security perimeter active. Public signups locked.' },
+        { time: '09:01:04', event: 'INVITE_MINTED: Token AEGIS-VIP-9482 generated for partner@workspace.io (role: member).' }
+      ]
+    };
+
+    let state = loadState();
+    let currentUser = null;
+    let verifiedInvite = null;
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_STATE));
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+      return JSON.parse(raw);
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function addLog(message) {
+      const now = new Date();
+      const time = now.toTimeString().split(' ')[0];
+      state.logs.unshift({ time, event: message });
+      if (state.logs.length > 40) state.logs.pop();
+      saveState();
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const borderClass = type === 'error' ? 'border-red-800 bg-red-950/90 text-red-200' : 'border-emerald-800 bg-zinc-900/95 text-emerald-300';
+      toast.className = `px-4 py-2.5 rounded-lg border ${borderClass} text-xs font-medium shadow-xl backdrop-blur-md transition-all duration-300`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // --- NAVIGATION ---
+    function navigateTo(view) {
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById('view-register').classList.add('hidden');
+      document.getElementById('app-shell').classList.add('hidden');
+
+      if (view === 'login') {
+        document.getElementById('view-login').classList.remove('hidden');
+      } else if (view === 'register') {
+        document.getElementById('view-register').classList.remove('hidden');
+      } else if (view === 'app' && currentUser) {
+        document.getElementById('app-shell').classList.remove('hidden');
+        setupAuthenticatedShell();
+      }
+      lucide.createIcons();
+    }
+
+    // --- LOGIN & DEMO AUTOFILL ---
+    function quickLogin(email, password) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = password;
+      document.getElementById('login-form').dispatchEvent(new Event('submit'));
+    }
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const password = document.getElementById('login-password').value;
+      const errBox = document.getElementById('login-error');
+
+      const user = state.users.find(u => u.email.toLowerCase() === email && u.password === password);
+      if (!user) {
+        errBox.textContent = 'Invalid credentials. Access denied.';
+        errBox.classList.remove('hidden');
+        addLog(`AUTH_FAILED: Failed login attempt for ${email}`);
+        return;
+      }
+      if (user.status === 'revoked') {
+        errBox.textContent = 'Your workspace clearance has been revoked by an Administrator.';
+        errBox.classList.remove('hidden');
+        addLog(`AUTH_BLOCKED: Revoked user ${email} attempted login.`);
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      currentUser = user;
+      addLog(`AUTH_SUCCESS: ${user.email} (${user.role}) entered workspace.`);
+      showToast(`Welcome back, ${user.name}`);
+      navigateTo('app');
+    });
+
+    function logout() {
+      if (currentUser) {
+        addLog(`SESSION_LOCKED: ${currentUser.email} signed out.`);
+      }
+      currentUser = null;
+      document.getElementById('login-password').value = '';
+      navigateTo('login');
+    }
+
+    // --- INVITE TOKEN VERIFICATION & REGISTRATION ---
+    function verifyInviteToken() {
+      const code = document.getElementById('reg-token-input').value.trim().toUpperCase();
+      const invite = state.invites.find(i => i.token === code);
+
+      if (!invite) {
+        showToast('Invalid invite token.', 'error');
+        return;
+      }
+      if (invite.used) {
+        showToast('This invite token has already been redeemed.', 'error');
+        return;
+      }
+
+      verifiedInvite = invite;
+      document.getElementById('reg-lock-banner').classList.add('hidden');
+      document.getElementById('register-form').classList.remove('hidden');
+      document.getElementById('reg-assigned-email').textContent = invite.email;
+
+      const roleBadge = document.getElementById('reg-assigned-role');
+      roleBadge.textContent = invite.role;
+      roleBadge.className = invite.role === 'admin'
+        ? 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30'
+        : 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase bg-sky-500/20 text-sky-300 border border-sky-500/30';
+
+      showToast('Invite token verified. Complete your profile.');
+    }
+
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!verifiedInvite) return;
+
+      const fullName = document.getElementById('reg-fullname').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      const newUser = {
+        id: 'u' + Date.now(),
+        name: fullName,
+        email: verifiedInvite.email,
+        password: password,
+        role: verifiedInvite.role,
+        status: 'active'
+      };
+
+      state.users.push(newUser);
+      verifiedInvite.used = true;
+      addLog(`USER_PROVISIONED: ${newUser.email} registered via token ${verifiedInvite.token} (role: ${newUser.role}).`);
+      saveState();
+
+      currentUser = newUser;
+      verifiedInvite = null;
+      document.getElementById('register-form').reset();
+      document.getElementById('register-form').classList.add('hidden');
+      document.getElementById('reg-lock-banner').classList.remove('hidden');
+
+      showToast('Account provisioned. Entering workspace...');
+      navigateTo('app');
+    });
+
+    // --- AUTHENTICATED SHELL & RBAC ---
+    function setupAuthenticatedShell() {
+      document.getElementById('header-user-name').textContent = currentUser.name;
+      const roleEl = document.getElementById('header-user-role');
+      roleEl.textContent = currentUser.role;
+      roleEl.className = currentUser.role === 'admin'
+        ? 'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30'
+        : 'text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase bg-sky-500/15 text-sky-400 border border-sky-500/30';
+
+      const adminBtn = document.getElementById('nav-admin-btn');
+      if (currentUser.role === 'admin') {
+        adminBtn.classList.remove('hidden');
+      } else {
+        adminBtn.classList.add('hidden');
+      }
+
+      switchShellView('workspace');
+      renderAll();
+    }
+
+    function switchShellView(target) {
+      const wsView = document.getElementById('shell-workspace');
+      const adminView = document.getElementById('shell-admin');
+      const wsBtn = document.getElementById('nav-workspace-btn');
+      const adminBtn = document.getElementById('nav-admin-btn');
+
+      if (target === 'workspace') {
+        wsView.classList.remove('hidden');
+        adminView.classList.add('hidden');
+        wsBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-elevated text-white transition flex items-center gap-1.5';
+        adminBtn.className = currentUser.role === 'admin'
+          ? 'px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white transition flex items-center gap-1.5'
+          : 'hidden';
+      } else if (target === 'admin') {
+        wsView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        wsBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white transition flex items-center gap-1.5';
+        adminBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30 transition flex items-center gap-1.5';
+
+        if (currentUser.role !== 'admin') {
+          document.getElementById('admin-403-guard').classList.remove('hidden');
+          document.getElementById('admin-authorized-content').classList.add('hidden');
+        } else {
+          document.getElementById('admin-403-guard').classList.add('hidden');
+          document.getElementById('admin-authorized-content').classList.remove('hidden');
+        }
+      }
+      renderAll();
+      lucide.createIcons();
+    }
+
+    function switchWsTab(tab) {
+      ['overview', 'tasks', 'vault'].forEach(t => {
+        document.getElementById(`ws-panel-${t}`).classList.add('hidden');
+        document.getElementById(`ws-tab-${t}`).className = 'px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white transition';
+      });
+      document.getElementById(`ws-panel-${tab}`).classList.remove('hidden');
+      document.getElementById(`ws-tab-${tab}`).className = 'px-3 py-1.5 rounded-md text-xs font-medium bg-elevated text-white transition';
+    }
+
+    // --- WORKSPACE ACTIONS (TASKS & VAULT) ---
+    document.getElementById('add-task-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('new-task-title').value.trim();
+      const priority = document.getElementById('new-task-priority').value;
+      state.tasks.unshift({
+        id: 't' + Date.now(),
+        title,
+        priority,
+        completed: false,
+        author: currentUser.name
+      });
+      addLog(`TASK_ADDED: "${title}" by ${currentUser.email}`);
+      saveState();
+      document.getElementById('add-task-form').reset();
+      renderAll();
+      showToast('Directive added to workspace');
+    });
+
+    function toggleTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveState();
+        renderAll();
+      }
+    }
+
+    document.getElementById('add-note-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('new-note-title').value.trim();
+      const tag = document.getElementById('new-note-tag').value;
+      const body = document.getElementById('new-note-body').value.trim();
+      const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      state.notes.unshift({
+        id: 'n' + Date.now(),
+        title,
+        tag,
+        body,
+        author: currentUser.name,
+        date
+      });
+      addLog(`VAULT_ENTRY: "${title}" created by ${currentUser.email}`);
+      saveState();
+      document.getElementById('add-note-form').reset();
+      renderAll();
+      showToast('Briefing saved to Vault');
+    });
+
+    // --- ADMIN BACKGROUND ACTIONS ---
+    document.getElementById('create-invite-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (currentUser.role !== 'admin') return;
+
+      const email = document.getElementById('invite-email').value.trim().toLowerCase();
+      const role = document.getElementById('invite-role').value;
+      const randomCode = 'AEGIS-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
+
+      state.invites.unshift({
+        token: randomCode,
+        email,
+        role,
+        used: false,
+        createdAt: 'Just now'
+      });
+
+      addLog(`INVITE_MINTED: Token ${randomCode} issued for ${email} (role: ${role}) by ${currentUser.email}`);
+      saveState();
+      document.getElementById('create-invite-form').reset();
+      renderAll();
+      showToast(`Invite token ${randomCode} generated`);
+    });
+
+    function copyToken(token) {
+      navigator.clipboard?.writeText(token);
+      showToast(`Copied token: ${token}`);
+    }
+
+    function testInviteFlow(token) {
+      logout();
+      navigateTo('register');
+      document.getElementById('reg-token-input').value = token;
+      verifyInviteToken();
+    }
+
+    function toggleUserRole(userId) {
+      if (currentUser.role !== 'admin') return;
+      const user = state.users.find(u => u.id === userId);
+      if (!user || user.id === currentUser.id) return;
+      user.role = user.role === 'admin' ? 'member' : 'admin';
+      addLog(`ROLE_UPDATED: ${user.email} clearance changed to ${user.role.toUpperCase()} by ${currentUser.email}`);
+      saveState();
+      renderAll();
+      showToast(`Updated ${user.name} to ${user.role}`);
+    }
+
+    function toggleUserStatus(userId) {
+      if (currentUser.role !== 'admin') return;
+      const user = state.users.find(u => u.id === userId);
+      if (!user || user.id === currentUser.id) return;
+      user.status = user.status === 'active' ? 'revoked' : 'active';
+      addLog(`ACCESS_${user.status.toUpperCase()}: ${user.email} status set to ${user.status} by ${currentUser.email}`);
+      saveState();
+      renderAll();
+      showToast(`${user.name} is now ${user.status}`);
+    }
+
+    function resetDemoSystem() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = loadState();
+      showToast('System reset to initial default state');
+      renderAll();
+    }
+
+    // --- RENDER ENGINE ---
+    function renderAll() {
+      if (!currentUser) return;
+
+      // KPIs
+      document.getElementById('kpi-tasks-count').textContent = state.tasks.filter(t => !t.completed).length;
+      document.getElementById('kpi-notes-count').textContent = state.notes.length;
+      document.getElementById('kpi-users-count').textContent = state.users.filter(u => u.status === 'active').length;
+
+      // Overview Tasks
+      document.getElementById('overview-tasks-list').innerHTML = state.tasks.slice(0, 4).map(t => `
+        <div class="flex items-center justify-between p-2.5 rounded-lg bg-obsidian border border-borderline">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" class="rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-0" />
+            <span class="text-xs truncate ${t.completed ? 'line-through text-zinc-500' : 'text-zinc-200'}">${t.title}</span>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-elevated text-zinc-400 ml-2 shrink-0">${t.priority}</span>
+        </div>
+      `).join('');
+
+      // Overview Notes
+      document.getElementById('overview-notes-list').innerHTML = state.notes.slice(0, 3).map(n => `
+        <div class="p-3 rounded-lg bg-obsidian border border-borderline">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-white">${n.title}</span>
+            <span class="text-[10px] text-emerald-400">${n.tag}</span>
+          </div>
+          <p class="text-[11px] text-zinc-400 mt-1 line-clamp-2">${n.body}</p>
+        </div>
+      `).join('');
+
+      // Full Tasks
+      document.getElementById('full-tasks-list').innerHTML = state.tasks.map(t => `
+        <div class="py-3 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" class="w-4 h-4 rounded border-zinc-700 bg-obsidian text-emerald-500 focus:ring-0" />
+            <div>
+              <p class="text-sm ${t.completed ? 'line-through text-zinc-500' : 'text-white'}">${t.title}</p>
+              <p class="text-[11px] text-zinc-500">Assigned by ${t.author}</p>
+            </div>
+          </div>
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-obsidian border border-borderline text-zinc-300">${t.priority}</span>
+        </div>
+      `).join('');
+
+      // Full Vault Notes
+      document.getElementById('full-notes-list').innerHTML = state.notes.map(n => `
+        <div class="bg-surface border border-borderline rounded-xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${n.tag}</span>
+            <span class="text-xs text-zinc-500">${n.date}</span>
+          </div>
+          <h4 class="text-base font-medium text-white">${n.title}</h4>
+          <p class="text-sm text-zinc-300 mt-2 leading-relaxed whitespace-pre-line">${n.body}</p>
+          <p class="text-[11px] text-zinc-500 mt-4 pt-3 border-t border-borderline">Authored by ${n.author}</p>
+        </div>
+      `).join('');
+
+      // Admin Invites List
+      document.getElementById('admin-invites-list').innerHTML = state.invites.map(inv => `
+        <div class="p-3 rounded-lg bg-obsidian border border-borderline flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-semibold ${inv.used ? 'text-zinc-500 line-through' : 'text-amber-400'}">${inv.token}</span>
+              <span class="text-[10px] px-1.5 py-0.2 rounded uppercase ${inv.role === 'admin' ? 'bg-amber-500/10 text-amber-400' : 'bg-sky-500/10 text-sky-400'}">${inv.role}</span>
+              ${inv.used
+                ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400">REDEEMED</span>'
+                : '<span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400">ACTIVE</span>'}
+            </div>
+            <p class="text-[11px] text-zinc-400 mt-0.5">For: <span class="text-zinc-200">${inv.email}</span> • ${inv.createdAt}</p>
+          </div>
+          ${!inv.used ? `
+            <div class="flex items-center gap-1.5 self-start sm:self-center">
+              <button onclick="copyToken('${inv.token}')" class="px-2.5 py-1 rounded bg-elevated hover:bg-zinc-700 text-[11px] text-white transition">Copy</button>
+              <button onclick="testInviteFlow('${inv.token}')" class="px-2.5 py-1 rounded bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-[11px] text-amber-300 transition">Test Register →</button>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+
+      // Admin Users Table
+      document.getElementById('admin-users-tbody').innerHTML = state.users.map(u => {
+        const isSelf = u.id === currentUser.id;
+        return `
+          <tr>
+            <td class="py-3 px-3">
+              <p class="font-medium text-white text-xs">${u.name} ${isSelf ? '<span class="text-zinc-500">(You)</span>' : ''}</p>
+              <p class="text-[11px] text-zinc-500 font-mono">${u.email}</p>
+            </td>
+            <td class="py-3 px-3">
+              <span class="text-[10px] px-2 py-0.5 rounded font-semibold uppercase ${u.role === 'admin' ? 'bg-amber-500/15 text-amber-400' : 'bg-sky-500/15 text-sky-400'}">${u.role}</span>
+            </td>
+            <td class="py-3 px-3">
+              <span class="text-xs ${u.status === 'active' ? 'text-emerald-400' : 'text-red-400'}">● ${u.status}</span>
+            </td>
+            <td class="py-3 px-3 text-right space-x-1.5">
+              ${!isSelf ? `
+                <button onclick="toggleUserRole('${u.id}')" class="px-2.5 py-1 rounded bg-elevated hover:bg-zinc-700 text-[11px] text-zinc-200 transition">
+                  Make ${u.role === 'admin' ? 'Member' : 'Admin'}
+                </button>
+                <button onclick="toggleUserStatus('${u.id}')" class="px-2.5 py-1 rounded ${u.status === 'active' ? 'bg-red-950/50 hover:bg-red-900/60 text-red-300 border border-red-900/50' : 'bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-900/50'} text-[11px] transition">
+                  ${u.status === 'active' ? 'Revoke' : 'Restore'}
+                </button>
+              ` : '<span class="text-[11px] text-zinc-600">Master Session</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Audit Logs
+      document.getElementById('admin-audit-logs').innerHTML = state.logs.map(l => `
+        <div class="text-zinc-400">
+          <span class="text-zinc-600">[${l.time}]</span> <span class="text-zinc-300">${l.event}</span>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Initialize Icons on Load
+    lucide.createIcons();
+  </script>
+</body>
+</html>
